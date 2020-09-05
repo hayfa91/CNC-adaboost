@@ -1311,10 +1311,10 @@ implements UpdateableClassifier, TechnicalInformationHandler, WeightedInstancesH
 					{
 						supportDistVal++;
 						instDistVal.add(j);
-						System.out.println("     OK");					
+						//System.out.println("     OK");					
 					}
-					else
-						System.out.println("     NO");
+					//else
+						//System.out.println("     NO");
 				}
 				//System.out.println("Support de cette DistinctValue ("+inst.attribute(m_Attribute.index()).value(i)+"): "+supportDistVal);
 				if(suppBestDistVal <= supportDistVal)

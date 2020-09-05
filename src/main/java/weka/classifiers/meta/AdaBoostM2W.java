@@ -731,9 +731,12 @@ public class AdaBoostM2W
 		for(int j=0;j<training.numClasses();j++)
 			if(j==training.instance(i).classValue())
 				weightIns.add((double) 0);
+						
 			else
                 weightIns.add((double) training.instance(i).weight() / (training.numClasses() - 1));
 		weightV.add(weightIns);
+	
+    	
 	}
 	
 	/*
@@ -839,6 +842,17 @@ public class AdaBoostM2W
 	beta = (double) epsilon / ((double) 1 - epsilon);
 	if (this.m_Debug)
 		System.out.println(" The error (beta) of the weak classifier: "+beta);
+	
+	double accuracy = evaluation.pctCorrect();
+	System.out.println("Accuracy = " + accuracy);
+	
+	double erreur = evaluation.pctIncorrect();
+	System.out.println("error rate = " + erreur);
+	
+	double rejet = evaluation.pctUnclassified();
+	System.out.println("Rejection = " + rejet);
+
+	
 	
 	//Mise a jour de la distribution
 	for(int i=0; i<training.numInstances(); i++)

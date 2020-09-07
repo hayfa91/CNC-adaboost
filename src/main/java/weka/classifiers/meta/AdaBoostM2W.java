@@ -128,10 +128,10 @@ public class AdaBoostM2W
   implements WeightedInstancesHandler, Sourcable, TechnicalInformationHandler {
 
   /** for serialization */
-  static final long serialVersionUID = -2011091661919L;
+  static final long serialVersionUID = -202009071433L;
   
   /** Max num iterations tried to find classifier with non-zero error. */ 
-  private static int MAX_NUM_RESAMPLING_ITERATIONS = 10;
+  private static int MAX_NUM_RESAMPLING_ITERATIONS = 50;
   
   /** Array for storing the weights for the votes. */
   protected double [] m_Betas;
@@ -156,6 +156,9 @@ public class AdaBoostM2W
 
   /** a CNC model in case no model can be built from the data */
   protected Classifier m_CNC;
+  
+  /** a Cost Matrix under string form */
+  protected String m_UseCostMatrixS = "1 1 1 1";
   
   /**
    * Constructor.
@@ -419,6 +422,37 @@ public class AdaBoostM2W
     return m_UseResampling;
   }
 
+  
+  /**
+   * Returns the tip text for this property
+   * @return tip text for this property suitable for
+   * displaying in the explorer/experimenter gui
+   */
+  public String useCostMatrixTipText() {
+    return "Whether Cost Matrix is used instead of reject.";
+  }
+
+  /**
+   * Set Cost Matrix string
+   *
+   * @param CostMatrixS if Cost Matrix should be used
+   */
+  public void setCostMatrixS(String CMS) {
+
+    m_UseCostMatrixS = CMS;
+  }
+
+  /**
+   * Get whether Cost Matrix is used on
+   *
+   * @return true if Cost Matrix output is on
+   */
+  public String getCostMatrixS() {
+
+    return m_UseCostMatrixS;
+  }
+  
+  
   /**
    * Returns default capabilities of the classifier.
    *
@@ -851,6 +885,8 @@ public class AdaBoostM2W
 	
 	double rejet = evaluation.pctUnclassified();
 	System.out.println("Rejection = " + rejet);
+	
+	System.out.println("accuracy, ER, rejet = " + rejet);
 
 	
 	
@@ -1089,7 +1125,7 @@ public class AdaBoostM2W
    * @return		the revision
    */
   public String getRevision() {
-    return RevisionUtils.extract("$Revision: 5928 $");
+    return RevisionUtils.extract("$Revision: 2020 $");
   }
 
   /**

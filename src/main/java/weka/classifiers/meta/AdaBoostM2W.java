@@ -22,11 +22,13 @@
 
 package weka.classifiers.meta;
 
+
 import weka.classifiers.Classifier;
 //import weka.classifiers.AbstractClassifier;
 import weka.classifiers.Evaluation;
 import weka.classifiers.RandomizableIteratedSingleClassifierEnhancer;
 import weka.classifiers.Sourcable;
+import weka.classifiers.evaluation.Prediction;
 //import weka.classifiers.lattices.Rules;
 //import weka.classifiers.evaluation.Diversity;
 import weka.core.Attribute;
@@ -50,10 +52,20 @@ import weka.core.TechnicalInformation.Type;
 //import java.io.FileWriter;
 //import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Random;
 import java.util.Vector;
-
+import java.util.stream.Collectors;
+import java.util.stream.DoubleStream;
+import java.util.List;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.ObjectOutput;
+import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.text.DecimalFormat;
 
 /**
@@ -158,7 +170,7 @@ public class AdaBoostM2W
   protected Classifier m_CNC;
   
   /** a Cost Matrix under string form */
-  protected String m_UseCostMatrixS = "1 1 1 1";
+  protected String m_UseCostMatrixS = "0 , 1 , 1 , 0 , 1";
   
   /**
    * Constructor.
@@ -251,7 +263,9 @@ public class AdaBoostM2W
       System.err.println("Selected " + trainData.numInstances()
 			 + " out of " + numInstances);
     }
+  
     return trainData;
+    
   }
 
   /**
@@ -507,7 +521,8 @@ public class AdaBoostM2W
       buildClassifierWithWeights(data);
     } else {
       buildClassifierUsingResampling(data);
-    }  
+    } 
+    
   }
 
   /**
@@ -674,6 +689,7 @@ public class AdaBoostM2W
 		{
 			if(evaluation.evaluateModelOnceAndRecordPrediction(m_Classifiers[m_NumIterationsPerformed], training.instance(i)) == j)
 				weightV.get(i).set(j, weightV.get(i).get(j) * Math.pow( beta , 0.5 * ((int) prediction_inst_byWeak.get(i)))) ;
+			
 			else
 				weightV.get(i).set(j, weightV.get(i).get(j) * Math.pow( beta , 0.5 * ((int) 1 + prediction_inst_byWeak.get(i)))) ;
 		}
@@ -729,9 +745,8 @@ public class AdaBoostM2W
   protected void buildClassifierWithWeights(Instances data) 
     throws Exception {
 
-//	  System.err.println("\n\nAdaBoost.M2: Build Classifier "+ this.getClassifierSpec() + " WithWeights on "+ data.relationName());
-	  
-	  
+	 // System.err.println("\n\nAdaBoost.M2: Build Classifier "+ this.getClassifierSpec() + " WithWeights on "+ data.relationName());
+	   
     Instances trainData, training;
     double epsilon; // Pseudo-losses
     double reweight;
@@ -739,6 +754,7 @@ public class AdaBoostM2W
     Evaluation evaluation;
     int numInstances = data.numInstances();
     Random randomInstance = new Random(m_Seed);
+    double accuracy = 0, erreur, rejet, hayfa = 0, nida=0;
 
     // Initialize data
     m_Betas = new double [m_Classifiers.length];  //each Beta is calculated from epsilon: Beta = epsilon/(1-epsilon)
@@ -748,15 +764,17 @@ public class AdaBoostM2W
     // with it doesn't mess up the weights for anyone else
     //INPUT: sequence of N examples <(x1,y1),...(xn,yn)> with label yi in Y={1,..,k}
     training = new Instances(data, 0, numInstances);
+   
 
 	// Vecteur contenant les poids associées à chaque classifieur ( à chaque itération)
 	WeightInst_byIteration = new ArrayList<Double>(training.numInstances());
-
+	
 	
 	//INPUT: Distribution D over the N examples
 	for (int i = 0; i < training.numInstances(); i++)
 		training.instance(i).setWeight((double) 1/training.numInstances());
-
+	 
+	 
 	//INITIALIZE the weight vector: w1 i,y = D(i)/(k-1) for i=1,..,N and y in Y-{yi}.
 	weightV = new ArrayList <ArrayList <Double>> ();
 	for(int i=0 ; i<training.numInstances() ; i++)
@@ -769,7 +787,8 @@ public class AdaBoostM2W
 			else
                 weightIns.add((double) training.instance(i).weight() / (training.numClasses() - 1));
 		weightV.add(weightIns);
-	
+		// System.out.println("vecteur des poids (initialisation)"+weightIns);
+        // System.out.println(weightV);
     	
 	}
 	
@@ -777,12 +796,14 @@ public class AdaBoostM2W
      * Do boostrap iterations 
      */
 	
+
+	
     for (m_NumIterationsPerformed = 0; m_NumIterationsPerformed < m_Classifiers.length; m_NumIterationsPerformed++) 
     {    	
     	if (m_Debug)  
     		System.err.println("Training classifier " + (m_NumIterationsPerformed + 1));
     	
-		//Calculer la somme des weights pour chaque instance du context
+		//Calculer la somme des weights pour chaque instance du context (LES W)
 		Double somW;
 		WeightInst_byIteration.clear();
 		for(int i=0;i<training.numInstances();i++)
@@ -790,7 +811,10 @@ public class AdaBoostM2W
 			somW = (double) 0;
 			for(int j=0;j<training.numClasses();j++)
 				somW += weightV.get(i).get(j);
+		     // System.out.println("arraylist contenant tous les vecteurs des poids"+weightV);
+			// System.out.println("W pour chaque instance"+somW);
 			WeightInst_byIteration.add(somW);
+		//	System.out.println(WeightInst_byIteration);
 		}
 		
 		//Calculer les 'qweights' pour chaque instance du context
@@ -801,18 +825,22 @@ public class AdaBoostM2W
 			ArrayList <Double> qweightIns = new ArrayList<Double>(training.numClasses());
 			for(int j=0;j<training.numClasses();j++)
 				qweightIns.add((double) weightV.get(i).get(j) / WeightInst_byIteration.get(i));
+			//System.out.println("%%%%%%%%%%%%% q %%%%%%%%%%%%%"+qweightIns);
 			qweightV.add(qweightIns);
+		   // System.out.println(qweightV);
 		}
 		
 		//Sommation des weight pour cette itération
 		double somWit = 0;
 		for(int i=0;i<training.numInstances();i++)
 			somWit += WeightInst_byIteration.get(i);
+		 //   System.out.println(somWit);
 		
 		//Les nouvelles valeur de distribution pour les instances du contexte
 		for(int i=0;i<training.numInstances();i++)
 		{
 			Double temp=(Double) WeightInst_byIteration.get(i) / somWit;
+			//System.out.println("%%%%%%%%%%%Nouvelle distribution%%%%%%%%%%%%"+temp);
 			training.instance(i).setWeight(temp);
 		}
  	
@@ -820,16 +848,18 @@ public class AdaBoostM2W
       //Weight Threshold. The percentage of weight mass used in training
       if (m_WeightThreshold < 100) 
     	  trainData = selectWeightQuantile(training, (double)m_WeightThreshold / 100);
-      else
+      else 
     	  trainData = new Instances(training, 0, numInstances);
+      
        
       // Build the classifier
       // Call WeakLearn, providing it with the distrubution Dt and label weighting function qt; get back a hypothesis ht: X*Y->[0,1]
       if (m_Classifiers[m_NumIterationsPerformed] instanceof Randomizable)
     	  ((Randomizable) m_Classifiers[m_NumIterationsPerformed]).setSeed(randomInstance.nextInt());
       m_Classifiers[m_NumIterationsPerformed].buildClassifier(trainData);
+     
+         
       
-
       // Evaluate the classifier
       evaluation = new Evaluation(data);
       
@@ -840,30 +870,35 @@ public class AdaBoostM2W
       {
     	  if(training.instance(i).classValue() == 
     		  evaluation.evaluateModelOnceAndRecordPrediction(m_Classifiers[m_NumIterationsPerformed], training.instance(i)))
-    		  prediction_inst_byWeak.add(1); 
+    		  prediction_inst_byWeak.add(1);
     	  else
     		  prediction_inst_byWeak.add(0);
+    		 
       }
       
+     
       if(m_Debug)
     	  System.out.println("Classification OutPut: " + prediction_inst_byWeak.toString());
       
 	  evaluation.evaluateModel(m_Classifiers[m_NumIterationsPerformed], training);
-	   
+	  
 	  //Calcul du pseudo-perte associé à chaque prédiction d'instance par le classifieur faible pour cette itération
 	  ArrayList <Double> tab_pseudo_perte = new ArrayList <Double> (training.numInstances());
-	  
 	  //epsilon
 	  epsilon = (double) 0.0; 	  
 	  for(int i=0;i<training.numInstances();i++)
 	  { 
 		double somMultiCl=0;
-		for(int j=0; j<training.numClasses(); j++)		
+		for(int j=0; j<training.numClasses(); j++)	
 			if(evaluation.evaluateModelOnceAndRecordPrediction(m_Classifiers[m_NumIterationsPerformed], training.instance(i)) == j)
 				somMultiCl += (double) qweightV.get(i).get(j); // * Mclassifieur_multi_cl_nom(inst, i,ClassifieurFaible,j);
 
 		tab_pseudo_perte.add((double) (0.5 * training.instance(i).weight() * (1 - prediction_inst_byWeak.get(i) + somMultiCl )));
-		epsilon = epsilon + tab_pseudo_perte.get(i);		
+		//System.out.println("epsilon" +tab_pseudo_perte);
+		epsilon = epsilon + tab_pseudo_perte.get(i);	
+		
+		
+		
 	}
 	
 	//Calculer epsilon
@@ -876,20 +911,8 @@ public class AdaBoostM2W
 	beta = (double) epsilon / ((double) 1 - epsilon);
 	if (this.m_Debug)
 		System.out.println(" The error (beta) of the weak classifier: "+beta);
-	
-	double accuracy = evaluation.pctCorrect();
-	System.out.println("Accuracy = " + accuracy);
-	
-	double erreur = evaluation.pctIncorrect();
-	System.out.println("error rate = " + erreur);
-	
-	double rejet = evaluation.pctUnclassified();
-	System.out.println("Rejection = " + rejet);
-	
-	System.out.println("accuracy, ER, rejet = " + rejet);
-
-	
-	
+	  
+	   
 	//Mise a jour de la distribution
 	for(int i=0; i<training.numInstances(); i++)
 		for(int j=0; j<training.numClasses(); j++)
@@ -900,6 +923,8 @@ public class AdaBoostM2W
 				weightV.get(i).set(j, weightV.get(i).get(j) * Math.pow( beta , 0.5 * ((int) 1 + prediction_inst_byWeak.get(i)))) ;
 		}
 	
+	
+	
 	//Calcul du poid de classification associé à cette itération
 	reweight = (double) Math.log((double)1/beta);	
 	// Determine the weight to assign to this model
@@ -907,9 +932,137 @@ public class AdaBoostM2W
     if (this.m_Debug)
 		System.out.println(" The weight to assign to this classifier: " + reweight);
     
+    
+    
+     accuracy = evaluation.pctCorrect(); 
+	//System.out.println("Accuracy = " + accuracy);
+	
+	 erreur = evaluation.pctIncorrect();
+	//System.out.println("error rate = " + erreur);
+	
+	 rejet = evaluation.pctUnclassified();
+	//System.out.println("Rejection = " + rejet);
+  System.out.println(evaluation.toSummaryString()); //Summary of Training
+  System.out.println("nombres d'instances"+evaluation.numInstances());
+ 
+  
+  
+	//System.out.println("Matrice en entrée = " + m_UseCostMatrixS);
+	
+   double[][] NEC = evaluation.confusionMatrix();
+	double [] oneDArray = new double[NEC.length*NEC.length];
+    //Flatten 2D array to 1D array...
+    int s = 0;
+	for (int i = 0; i < NEC.length; i++) {
+	     for (int j = 0; j < NEC.length; j++) {
+	    //  System.out.print(NEC[i][j] + "\t");
+	        oneDArray[s] = NEC[i][j];
+            s++;
+	      }   
+	   }
+	
+	
+	List<Double> list = DoubleStream.of(oneDArray).boxed().collect(Collectors.toList());
+	//System.out.println(list);
+	String str[] = m_UseCostMatrixS.split(",");
+	List<String> al = new ArrayList<String>();
+	al = Arrays.asList(str);
+	//System.out.println(al);
+	
+	
+	   double somme=0;
+	   double[] doubleList = new double[al.size()]; 
+	   for (int i = 0; i < al.size()-1; ++i) { 
+		    doubleList[i] = Double.parseDouble(al.get(i)); 
+		    somme =somme + doubleList[i];
+		//  System.out.println(somme);
+		}
+
+	   double[] doubleList2 = new double[list.size()]; 
+	   for (int i = 0; i < list.size(); ++i) { 
+		    doubleList2[i] = (list.get(i)); 
+		}
+
+
+	   hayfa = 0;
+	   double [] result =  new double[list.size()];
+	   for (int i = 0; i < list.size(); i++) 
+		{
+
+		   result [i] = (doubleList[i] * doubleList2[i] );
+		// print the result.
+			//System.out.println("\nResult: "+result[i]); 
+			hayfa += result [i];
+		}
+	 // System.out.println("la somme est : "+sum);
+	// System.out.println("le NEC est  : "+sum / training.numInstances());
+	   
+	  /* cas pour NEC . le cas de deux classes  
+	   hayfa = (hayfa + (evaluation.unclassified()*doubleList[doubleList.length-1]))/(training.numInstances() * doubleList[2]);
+	   */
+	   
+	   //cas pour cout moyen CM. (2 classes et classes multiples)
+	  // hayfa = (hayfa + (evaluation.unclassified()*doubleList[doubleList.length-1]))/(training.numInstances());
+	  // System.out.println("Accuracy ="+ accuracy +"\t Error rate = "+erreur  +"\t Rejection rate="+rejet  +"\t cout moyen="+hayfa);
+	   
+	  
+      //cas 2 classes pour nida 
+	   nida = ((doubleList[1] + doubleList[2])*(doubleList2[0]+doubleList2[3]))/(hayfa + (evaluation.unclassified()*doubleList[doubleList.length-1]));
+	
+	//cas multi-classe pour nida
+	   
+  //  nida = (somme * evaluation.correct())/(hayfa + (evaluation.unclassified()*doubleList[doubleList.length-1]));
+	// System.out.println("Accuracy ="+ accuracy +"\t Error rate = "+erreur  +"\t Rejection rate="+rejet  +"\t nv="+nida);
+    
+	 
+	  
+/*
+	 //create a file first    
+	 FileWriter  writer      = new FileWriter("D:\\testing.txt");
+	    PrintWriter outputfile = new PrintWriter(writer);
+	//replace your System.out.print("your output");
+	   outputfile.println(+m_NumIterationsPerformed +"Accuracy ="+ accuracy +"\t Error rate = "+erreur  +"\t Rejection rate="+rejet  +"\t NEC : "+sum);
+	   outputfile.close();
+	   */
+	   
+	   
+	
+	   String Newligne=System.getProperty("line.separator");
+	   //ecriture dans le fichier de cout moyen 
+	// String textToAppend = +m_NumIterationsPerformed +" \t\t"+ accuracy +"\t\t "+erreur  +"\t\t"+rejet +"\t\t"+hayfa +Newligne; //new line in content
+	   //ecriture dans le fichier de nida
+	 String textToAppend = +m_NumIterationsPerformed +" \t\t"+ accuracy +"\t\t "+erreur  +"\t\t"+rejet +"\t\t"+nida +Newligne; //new line in content
+	     
+	    FileOutputStream outputStream = new FileOutputStream("d:/testing.txt", true);
+	    byte[] strToBytes = textToAppend.getBytes();
+	   outputStream.write(strToBytes);
+	  
+	    outputStream.close();  
+	    
+	   
+	  /*  
+	    //La nouvelle métrique (accuracy/hayfa): condition d'arret 
+	    if(m_NumIterationsPerformed>0 && (accuracy/hayfa) <1){
+	    	
+	    	 break;
+	        } */
+	       
+	    
+	 //La nouvelle métrique (nida): condition d'arret 
+		/*  if(m_NumIterationsPerformed > 0 && nida < 1){
+		    	
+		    	 break;
+		        } 
+		       */
+   
+	    
     }// End for (m_NumIterationsPerformed = 0; m_NumIterationsPerformed < m_Classifiers.length; m_NumIterationsPerformed++)
 
-  
+    //System.exit(0);
+   
+	
+	
+    
   }// End buildClassifierWithWeights(Instances data) 
   
   /**
@@ -929,19 +1082,19 @@ public class AdaBoostM2W
       {
     	  Boucle2: for (int j=0; j<data.numAttributes(); j++)
     	  {
-    		  //System.out.println(j + " / "+ data.numAttributes());
+    		//  System.out.println(j + " / "+ data.numAttributes());
     		  if(! data.instance(i).stringValue(j).equals(inst.stringValue(j)) )
     		  {
     			  i++;
-    			  //System.out.println(data.instance(i-1).stringValue(j)+"\t VS \t "+inst.stringValue(j) + "\t NEXT " + i);
+    			 // System.out.println(data.instance(i-1).stringValue(j)+"\t VS \t "+inst.stringValue(j) + "\t NEXT " + i);
     			  break Boucle2;
     		  }
     		  else
     			  if(j == data.numAttributes()-1) 
     			  {  
-    				  //System.out.println(j + "\t VS \t "+ data.numAttributes());
-    				  //System.out.println(j+1 + " / "+ data.numAttributes());
-    				  //System.out.println("** "+inst.toString()+"\nVS "+data.instance(i).toString());
+    				 // System.out.println(j + "\t VS \t "+ data.numAttributes());
+    				//  System.out.println(j+1 + " / "+ data.numAttributes());
+    				 // System.out.println("** "+inst.toString()+"\nVS "+data.instance(i).toString());
     				  return true; 
     			  }
     	  }
@@ -968,7 +1121,7 @@ public class AdaBoostM2W
 
   public double [] distributionForInstance(Instance instance) 
     throws Exception {
-      
+	
     // default model?
 	  if (m_CNC != null) {
 	      return m_CNC.distributionForInstance(instance);

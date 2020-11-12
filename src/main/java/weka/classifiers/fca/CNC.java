@@ -954,7 +954,6 @@ implements UpdateableClassifier, TechnicalInformationHandler, WeightedInstancesH
 		}
 		
 		m_InfoGainAttributeEval.buildEvaluator(inst);
-		
 		// Compute attribute with maximum information gain (FROM ID3).
 	    double[] infoGains = new double[inst.numAttributes()];
 	    Enumeration attEnum = inst.enumerateAttributes();
@@ -969,6 +968,7 @@ implements UpdateableClassifier, TechnicalInformationHandler, WeightedInstancesH
 		    for(int i=0; i<inst.numAttributes();i++)
 		    	System.out.println("\tInfoGains de l'attribut "+inst.attribute(i).name()+": "+infoGains[i]);
 	    }
+	   
 	    
 	    Attribute m_Attribute;
 	    m_Attribute = inst.attribute(Utils.maxIndex(infoGains));
@@ -991,21 +991,21 @@ implements UpdateableClassifier, TechnicalInformationHandler, WeightedInstancesH
 	    		 
 		    }   
 	    
-	    if(m_Debug){
+	 /*   if(m_Debug){
 	    	System.out.println("\nCalcul des gains ratio de chaque attribut de ce context");
 		    for(int i=0; i<inst.numAttributes();i++)
 		    	System.out.println("\tGain ratio de l'attribut "+inst.attribute(i).name()+": "+GainRatio[i]);
-	    }
+	    } */
 	    
 	    Attribute m_AttributeRatio;
 	    m_AttributeRatio = inst.attribute(Utils.maxIndex(GainRatio));
-	    if(m_Debug){	
+	 /*   if(m_Debug){	
 	    	System.out.println("\nL'attribut retenu pour calculer sa fermeture: "+m_AttributeRatio.name());
 	    	System.out.println("\tAttribut d'indice "+m_AttributeRatio.index());
 	    	System.out.println("\tNombre des differents valeurs possibles: "+inst.numDistinctValues(m_AttributeRatio.index()));
 	    	for(int i=0; i<inst.numDistinctValues(m_AttributeRatio.index()); i++)
 	    		System.out.println("\t\tValeur "+(i+1)+" : "+inst.attribute(m_AttributeRatio.index()).value(i));
-	    }
+	    } */
 	    
 	    // COMPUTE moyenne de gain ratio et correlation
 		m_GainRatioAttributeEval.buildEvaluator(inst);
@@ -1019,11 +1019,11 @@ implements UpdateableClassifier, TechnicalInformationHandler, WeightedInstancesH
 		    		 
 			    }   
 		    
-		    if(m_Debug){
+		/*    if(m_Debug){
 		    	System.out.println("\nCalcul des gains ratio de chaque attribut de ce contexte");
 			    for(int i=0; i<inst.numAttributes();i++)
 			    	System.out.println("\tGain ratio de l'attribut "+inst.attribute(i).name()+": "+GainRatio1[i]);
-		    }
+		    } */
 		    
 		    
         m_CorrelationAttributeEval.buildEvaluator(inst);
@@ -1037,11 +1037,11 @@ implements UpdateableClassifier, TechnicalInformationHandler, WeightedInstancesH
 		    		 
 			    }   
 		    
-		    if(m_Debug){
+		/*    if(m_Debug){
 		    	System.out.println("\nCalcul des correlation de chaque attribut de ce contexte");
 			    for(int i=0; i<inst.numAttributes();i++)
 			    	System.out.println("\tOne R de l'attribut "+inst.attribute(i).name()+": "+CorrelationAtt[i]);
-		    }
+		    } */
 		    double[] Moyenne = new double[inst.numAttributes()];
 		    for(int i=0; i<inst.numAttributes();i++)
 		    	Moyenne[i]= (GainRatio[i]+ CorrelationAtt[i])/2;
@@ -1050,13 +1050,13 @@ implements UpdateableClassifier, TechnicalInformationHandler, WeightedInstancesH
 		   	    		
 		   Attribute m_AttributeCorreRatio;
 		           m_AttributeCorreRatio = inst.attribute(Utils.maxIndex(Moyenne));
-		           if(m_Debug){	
+		   /*        if(m_Debug){	
 				    	System.out.println("\nL'attribut retenu pour calculer sa fermeture: "+m_AttributeCorreRatio.name());
 				    	System.out.println("\tAttribut d'indice "+m_AttributeCorreRatio.index());
 				    	System.out.println("\tNombre des differents valeurs possibles: "+inst.numDistinctValues(m_AttributeCorreRatio.index()));
 				    	for(int i=0; i<inst.numDistinctValues(m_AttributeCorreRatio.index()); i++)
 				    		System.out.println("\t\tValeur "+(i+1)+" : "+inst.attribute(m_AttributeCorreRatio.index()).value(i));
-				    }
+				    } */
 			
 	 // COMPUTE ONE R
 		m_OneRAttributeEval.buildEvaluator(inst);
@@ -1070,21 +1070,21 @@ implements UpdateableClassifier, TechnicalInformationHandler, WeightedInstancesH
 		    		 
 			    }   
 		    
-		    if(m_Debug){
+		/*    if(m_Debug){
 		    	System.out.println("\nCalcul des One R de chaque attribut de ce context");
 			    for(int i=0; i<inst.numAttributes();i++)
 			    	System.out.println("\tOne R de l'attribut "+inst.attribute(i).name()+": "+ONE_R[i]);
-		    }
+		    } */
 		    
 		    Attribute m_AttributeONE_R;
 		    m_AttributeONE_R = inst.attribute(Utils.maxIndex(ONE_R));
-		    if(m_Debug){	
+		 /*   if(m_Debug){	
 		    	System.out.println("\nL'attribut retenu pour calculer sa fermeture: "+m_AttributeONE_R.name());
 		    	System.out.println("\tAttribut d'indice "+m_AttributeONE_R.index());
 		    	System.out.println("\tNombre des differents valeurs possibles: "+inst.numDistinctValues(m_AttributeONE_R.index()));
 		    	for(int i=0; i<inst.numDistinctValues(m_AttributeONE_R.index()); i++)
 		    		System.out.println("\t\tValeur "+(i+1)+" : "+inst.attribute(m_AttributeONE_R.index()).value(i));
-		    }
+		    } */
 		    // COMPUTE Correlation
 			m_CorrelationAttributeEval.buildEvaluator(inst);
 				
@@ -1097,22 +1097,22 @@ implements UpdateableClassifier, TechnicalInformationHandler, WeightedInstancesH
 			    		 
 				    }   
 			    
-			    if(m_Debug){
+			/*    if(m_Debug){
 			    	System.out.println("\nCalcul des One R de chaque attribut de ce context");
 				    for(int i=0; i<inst.numAttributes();i++)
 				    	System.out.println("\tOne R de l'attribut "+inst.attribute(i).name()+": "+CorrelationAtt1[i]);
-			    }
+			    } */
 			    
 			    Attribute m_AttributeCorrelation1;
 			    m_AttributeCorrelation1 = inst.attribute(Utils.maxIndex(CorrelationAtt1));
-			    if(m_Debug){	
+			/*    if(m_Debug){	
 			    	System.out.println("\nL'attribut retenu pour calculer sa fermeture: "+m_AttributeCorrelation1.name());
 			    	System.out.println("\tAttribut d'indice "+m_AttributeCorrelation1.index());
 			    	System.out.println("\tNombre des differents valeurs possibles: "+inst.numDistinctValues(m_AttributeCorrelation1.index()));
 			    	for(int i=0; i<inst.numDistinctValues(m_AttributeCorrelation1.index()); i++)
 			    		System.out.println("hello world\t"+inst.attribute(m_AttributeCorrelation1.index()).value(i));
 			    	//	System.out.println("\t\tValeur "+(i+1)+" : "+inst.attribute(m_AttributeCorrelation.index()).value(i));
-			    }
+			    } */
 			    
 ///////////
 			    
@@ -1128,21 +1128,21 @@ implements UpdateableClassifier, TechnicalInformationHandler, WeightedInstancesH
 				    		 
 					    }   
 				    
-				    if(m_Debug){
+				/*    if(m_Debug){
 				    	System.out.println("\nCalcul des One R de chaque attribut de ce context");
 					    for(int i=0; i<inst.numAttributes();i++)
 					    	System.out.println("\tOne R de l'attribut "+inst.attribute(i).name()+": "+Symmetrical[i]);
-				    }
+				    } */
 				    
 				    Attribute m_AttributeSymmetrical;
 				    m_AttributeSymmetrical = inst.attribute(Utils.maxIndex(Symmetrical));
-				    if(m_Debug){	
+			/*	    if(m_Debug){	
 				    	System.out.println("\nL'attribut retenu pour calculer sa fermeture: "+m_AttributeSymmetrical.name());
 				    	System.out.println("\tAttribut d'indice "+m_AttributeSymmetrical.index());
 				    	System.out.println("\tNombre des differents valeurs possibles: "+inst.numDistinctValues(m_AttributeSymmetrical.index()));
 				    	for(int i=0; i<inst.numDistinctValues(m_AttributeSymmetrical.index()); i++)
 				    		System.out.println("\t\tValeur "+(i+1)+" : "+inst.attribute(m_AttributeSymmetrical.index()).value(i));
-				    }
+				    } */
 				    
 				    
 				    
@@ -1158,21 +1158,21 @@ implements UpdateableClassifier, TechnicalInformationHandler, WeightedInstancesH
 					    		 
 						    }   
 					    
-					    if(m_Debug){
+				/*	    if(m_Debug){
 					    	System.out.println("\nCalcul des One R de chaque attribut de ce context");
 						    for(int i=0; i<inst.numAttributes();i++)
 						    	System.out.println("\tOne R de l'attribut "+inst.attribute(i).name()+": "+Classifier_Attribute_Eval[i]);
-					    }
+					    } */
 					    
 					    Attribute m_AttributeClassifierAttributeEval;
 					    m_AttributeClassifierAttributeEval = inst.attribute(Utils.maxIndex(Classifier_Attribute_Eval));
-					    if(m_Debug){	
+					 /*   if(m_Debug){	
 					    	System.out.println("\nL'attribut retenu pour calculer sa fermeture: "+m_AttributeClassifierAttributeEval.name());
 					    	System.out.println("\tAttribut d'indice "+m_AttributeClassifierAttributeEval.index());
 					    	System.out.println("\tNombre des differents valeurs possibles: "+inst.numDistinctValues(m_AttributeClassifierAttributeEval.index()));
 					    	for(int i=0; i<inst.numDistinctValues(m_AttributeClassifierAttributeEval.index()); i++)
 					    		System.out.println("\t\tValeur "+(i+1)+" : "+inst.attribute(m_AttributeClassifierAttributeEval.index()).value(i));
-					    }
+					    } */
 					    
 					    // COMPUTE ReliefFAttributeEval
 						m_ReliefFAttributeEval.buildEvaluator(inst);
@@ -1186,21 +1186,21 @@ implements UpdateableClassifier, TechnicalInformationHandler, WeightedInstancesH
 						    		 
 							    }   
 						    
-						    if(m_Debug){
+						/*    if(m_Debug){
 						    	System.out.println("\nCalcul des One R de chaque attribut de ce context");
 							    for(int i=0; i<inst.numAttributes();i++)
 							    	System.out.println("\tOne R de l'attribut "+inst.attribute(i).name()+": "+ReliefF_Attribute_Eval[i]);
-						    }
+						    } */
 						    
 						    Attribute m_AttributeReliefFAttributeEval;
 						    m_AttributeReliefFAttributeEval = inst.attribute(Utils.maxIndex(ReliefF_Attribute_Eval));
-						    if(m_Debug){	
+					/*	    if(m_Debug){	
 						    	System.out.println("\nL'attribut retenu pour calculer sa fermeture: "+m_AttributeReliefFAttributeEval.name());
 						    	System.out.println("\tAttribut d'indice "+m_AttributeReliefFAttributeEval.index());
 						    	System.out.println("\tNombre des differents valeurs possibles: "+inst.numDistinctValues(m_AttributeReliefFAttributeEval.index()));
 						    	for(int i=0; i<inst.numDistinctValues(m_AttributeReliefFAttributeEval.index()); i++)
 						    		System.out.println("\t\tValeur "+(i+1)+" : "+inst.attribute(m_AttributeReliefFAttributeEval.index()).value(i));
-						    }
+						    } */
 						 // COMPUTE PrincipalComponents
 							m_PrincipalComponents.buildEvaluator(inst);
 								
@@ -1213,21 +1213,21 @@ implements UpdateableClassifier, TechnicalInformationHandler, WeightedInstancesH
 							    		 
 								    }   
 							    
-							    if(m_Debug){
+						/*	    if(m_Debug){
 							    	System.out.println("\nCalcul des One R de chaque attribut de ce context");
 								    for(int i=0; i<inst.numAttributes();i++)
 								    	System.out.println("\tPrincipalComponents de l'attribut "+inst.attribute(i).name()+": "+PrincipalComponents_Eval[i]);
-							    }
+							    } */
 							    
 							    Attribute m_AttributePrincipalComponents;
 							    m_AttributePrincipalComponents= inst.attribute(Utils.maxIndex(PrincipalComponents_Eval));
-							    if(m_Debug){	
+							/*    if(m_Debug){	
 							    	System.out.println("\nL'attribut retenu pour calculer sa fermeture: "+m_PrincipalComponents.name());
 							    	System.out.println("\tAttribut d'indice "+m_AttributePrincipalComponents.index());
 							    	System.out.println("\tNombre des differents valeurs possibles: "+inst.numDistinctValues(m_AttributePrincipalComponents.index()));
 							    	for(int i=0; i<inst.numDistinctValues(m_AttributePrincipalComponents.index()); i++)
 							    		System.out.println("\t\tValeur "+(i+1)+" : "+inst.attribute(m_AttributePrincipalComponents.index()).value(i));
-							    }
+							    } */
 							    //COMPUTE Information mutual
 			  				m_InformationMutuelle.buildEvaluator(inst);
 									
@@ -1240,21 +1240,21 @@ implements UpdateableClassifier, TechnicalInformationHandler, WeightedInstancesH
 								    		 
 									   }   
 								    
-								    if(m_Debug){
+								  /*  if(m_Debug){
 								   	System.out.println("\nCalcul des info mutuelles de chaque attribut de ce context");
 									   for(int i=0; i<inst.numAttributes();i++)
 									  	System.out.println("\tinfo mutuelle de l'attribut "+inst.attribute(i).name()+": "+InformationMutuelle_Eval[i]);
-								    }
+								    } */
 								    
 								    Attribute m_AttributeInformationMutuelle;
 								    m_AttributeInformationMutuelle= inst.attribute(Utils.maxIndex(InformationMutuelle_Eval));
-								    if(m_Debug){	
+								 /*   if(m_Debug){	
 								          System.out.println("\nL'attribut retenu pour calculer sa fermeture: "+m_InformationMutuelle.name());
 								    	  System.out.println("\tAttribut d'indice "+m_AttributeInformationMutuelle.index());
 								    	  System.out.println("\tNombre des differents valeurs possibles: "+inst.numDistinctValues(m_AttributeInformationMutuelle.index()));
 								    	  for(int i=0; i<inst.numDistinctValues(m_AttributeInformationMutuelle.index()); i++)
  								    		System.out.println("\t\tValeur "+(i+1)+" : "+inst.attribute(m_AttributeInformationMutuelle.index()).value(i));
-								      }
+								      } */
 								  
 															  //COMPUTE H-RATIO
 												  				m_HRatio.buildEvaluator(inst);
@@ -1268,21 +1268,21 @@ implements UpdateableClassifier, TechnicalInformationHandler, WeightedInstancesH
 																	    		 
 																		   }   
 																	    
-																	    if(m_Debug){
+																/*	    if(m_Debug){
 																	   	System.out.println("\nCalcul de la 1 ere mesure de chaque attribut de ce context");
 																		   for(int i=0; i<inst.numAttributes();i++)
 																		  	System.out.println("\tMesure1 de l'attribut "+inst.attribute(i).name()+": "+HRatio_Eval[i]);
-																	    }
+																	    } */
 																	    
 																	    Attribute m_AttributeHRatio;
 																	    m_AttributeHRatio= inst.attribute(Utils.maxIndex(HRatio_Eval));
-																	    if(m_Debug){	
+																	/*    if(m_Debug){	
 																	          System.out.println("\nL'attribut retenu pour calculer sa fermeture: "+m_HRatio.name());
 																	    	  System.out.println("\tAttribut d'indice "+m_AttributeHRatio.index());
 																	    	  System.out.println("\tNombre des differents valeurs possibles: "+inst.numDistinctValues(m_AttributeHRatio.index()));
 																	    	  for(int i=0; i<inst.numDistinctValues(m_AttributeHRatio.index()); i++)
 																	    		System.out.println("\t\tValeur "+(i+1)+" : "+inst.attribute(m_AttributeHRatio.index()).value(i));
-																	      }
+																	      } */
 		/* Génération d'un classifieur de type CNC à partir de la fermeture 
 	     * de la valeur nominale la plus pertinente (qui maximise le Support) 
 	     * de l'attribut nominal qui maximise le Gain Informationel
@@ -1330,7 +1330,7 @@ implements UpdateableClassifier, TechnicalInformationHandler, WeightedInstancesH
 			//Extraires les exemples associés a cet attribut
 			ArrayList <Integer> FERM_exe = new ArrayList <Integer> ();	
 			ArrayList <String> FERM_att = new ArrayList <String> ();	
-	
+		
 			//Liste des instances verifiant la fermeture
 			for(int i=0; i<inst.numInstances(); i++)
 			{
@@ -1412,6 +1412,48 @@ implements UpdateableClassifier, TechnicalInformationHandler, WeightedInstancesH
 			
 			Classification_Rule r = new Classification_Rule(CP,indiceMax,inst.attribute(inst.classIndex()).value(indiceMax),infoGains[Utils.maxIndex(infoGains)]);
 			classifierNC.add(r);
+			
+			System.out.println(CP);
+			String chaine = new String();
+			String ch = new String();
+			ArrayList <String> att = new ArrayList <String>();
+			ArrayList <String> list= new ArrayList <String>();
+			
+			for (int t=0;t<CP.size(); t++){
+				
+				ch=inst.attribute(t).name();
+				att.add(ch);
+				//System.out.println(ch);
+				//System.out.println(att);
+				if (CP.get(t)!="-null-") {
+					chaine=ch +" IN " +CP.get(t);	
+					list.add(chaine); 
+			    }
+				
+			}
+			//System.out.println(list);
+			String names = String.join(" AND ", list);
+			
+			
+			System.out.println(names +"  THEN  " +inst.attribute(inst.classIndex()).value(indiceMax));
+			for(int i=0; i<nbrInstFer; i++)
+				System.out.print(FERM_exe.get(i)+" - ");
+			
+			
+			
+			
+		/*	
+			String Newligne=System.getProperty("line.separator");
+			   //ecriture dans le fichier des règles
+			  String textToAppend = names +"  THEN  " +inst.attribute(inst.classIndex()).value(indiceMax); //new line in content
+			  
+			    FileOutputStream outputStream = new FileOutputStream("d:/testing.txt", true);
+			    byte[] strToBytes = textToAppend.getBytes();
+			   outputStream.write(strToBytes);
+			  
+			    outputStream.close();  
+			 */   
+			
 			
 	    }
 	    
